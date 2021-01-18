@@ -195,6 +195,7 @@ public class GdprBackupServiceBatchConfig {
 				//System.out.println("Inserted::"+insertcount+"backupDataInsertQuery::::::#$" + backupDataInsertQuery);
 				backupServiceOutput = new BackupServiceOutput(sumId, runId, insertcount);
 			} catch (Exception exception) {
+				System.out.println("exception"+exception.getStackTrace());
 				System.out.println(
 						CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: " + GlobalConstants.ERR_DATABACKUP_PROCESS);
 				exception.printStackTrace();
@@ -203,12 +204,12 @@ public class GdprBackupServiceBatchConfig {
 			}
 			try {
 				if (runErrorMgmt != null) {
-					System.out.println("runErrorMgmt:::"+runErrorMgmt);
+					System.out.println("runErrorMgmt::::::"+runErrorMgmt);
 					gdprOutputDaoImpl.loadErrorDetails(runErrorMgmt);
 					throw new GdprException(GlobalConstants.ERR_DATABACKUP_PROCESS);
 				}
 			} catch (Exception exception) {
-				System.out.println("runErrorMgmt::CURRENT_METHOD"+CURRENT_METHOD);
+				System.out.println("runErrorMgmt222::::::"+runErrorMgmt);
 				System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: "
 						+ GlobalConstants.ERR_DATABACKUP_PROCESS + GlobalConstants.ERR_RUN_ERROR_MGMT_INSERT);
 				exception.printStackTrace();
