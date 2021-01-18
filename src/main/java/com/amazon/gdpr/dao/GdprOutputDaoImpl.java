@@ -54,6 +54,7 @@ public class GdprOutputDaoImpl {
 	 * The error details are loaded in this method
 	 * @param runErrorMgmt 
 	 */
+	@Transactional
 	public void loadErrorDetails(RunErrorMgmt runErrorMgmt) {
 		String CURRENT_METHOD = "loadErrorDetails";
 		System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+":: Inside method");
