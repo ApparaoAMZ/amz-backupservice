@@ -195,7 +195,7 @@ public class GdprBackupServiceBatchConfig {
 				//System.out.println("Inserted::"+insertcount+"backupDataInsertQuery::::::#$" + backupDataInsertQuery);
 				backupServiceOutput = new BackupServiceOutput(sumId, runId, insertcount);
 			} catch (Exception exception) {
-				System.out.println("exception"+exception.getStackTrace());
+				System.out.println("exception:::::"+insertcount);
 				System.out.println(
 						CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: " + GlobalConstants.ERR_DATABACKUP_PROCESS);
 				exception.printStackTrace();
