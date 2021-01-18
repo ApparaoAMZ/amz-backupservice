@@ -203,10 +203,12 @@ public class GdprBackupServiceBatchConfig {
 			}
 			try {
 				if (runErrorMgmt != null) {
+					System.out.println("runErrorMgmt:::"+runErrorMgmt);
 					gdprOutputDaoImpl.loadErrorDetails(runErrorMgmt);
 					throw new GdprException(GlobalConstants.ERR_DATABACKUP_PROCESS);
 				}
 			} catch (Exception exception) {
+				System.out.println("runErrorMgmt::CURRENT_METHOD"+CURRENT_METHOD);
 				System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: "
 						+ GlobalConstants.ERR_DATABACKUP_PROCESS + GlobalConstants.ERR_RUN_ERROR_MGMT_INSERT);
 				exception.printStackTrace();

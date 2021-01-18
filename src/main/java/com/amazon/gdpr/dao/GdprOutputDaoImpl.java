@@ -54,7 +54,7 @@ public class GdprOutputDaoImpl {
 	 * @param runErrorMgmt 
 	 */
 	public void loadErrorDetails(RunErrorMgmt runErrorMgmt) {
-		String CURRENT_METHOD = "initiateNewRun";
+		String CURRENT_METHOD = "loadErrorDetails";
 		System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+":: Inside method");
 		
 		jdbcTemplate.update(SqlQueriesConstant.RUN_ERROR_MGMT_INSERT, new Object[]{runErrorMgmt.getRunId(), runErrorMgmt.getErrorSummary(), 
