@@ -41,6 +41,7 @@ public class GdprOutputDaoImpl {
 	 * @param lstImpactField
 	 * @return
 	 */	
+	@Transactional
 	public int batchInsertRunAnonymizeMapping(long runId, String countryCode, String region) {
 		String CURRENT_METHOD = "fetchCategoryDetails";		
 		System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+" :: Inside method");
