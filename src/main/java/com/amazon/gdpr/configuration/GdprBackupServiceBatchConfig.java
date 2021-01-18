@@ -192,7 +192,7 @@ public class GdprBackupServiceBatchConfig {
 				String backupDataInsertQuery = "INSERT INTO GDPR." + backupTableName + " (ID," + selectColumns + ") "
 						+ completeQuery + " ON CONFLICT (id) DO UPDATE " + "  SET " + splittedValues + ";";
 				insertcount = backupServiceDaoImpl.insertBackupTable(backupDataInsertQuery);
-				//System.out.println("Inserted::"+insertcount+"backupDataInsertQuery::::::#$" + backupDataInsertQuery);
+				System.out.println("Inserted::"+insertcount+"backupDataInsertQuery::::::#$" + backupDataInsertQuery);
 				backupServiceOutput = new BackupServiceOutput(sumId, runId, insertcount);
 			} catch (Exception exception) {
 				System.out.println("exception:::::"+insertcount);
