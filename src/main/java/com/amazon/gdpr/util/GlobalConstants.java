@@ -139,7 +139,7 @@ public class GlobalConstants {
 	public static String ERROR_FILE_UPLOAD		= "File processing had an issue. Please verify logs. ";
 	public static String SUCCESS_FILE_MESSAGE	= "File has been uploaded !!!";
 	
-	public static String DATE_FORMAT 			= "yyyy-MM-dd_HH24:MI:ss";
+	public static String DATE_FORMAT 			= "yyyy-MM-dd_HH:MI:ss";
 
 	
 	//File Upload Messages
