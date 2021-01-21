@@ -4,11 +4,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +36,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import com.amazon.gdpr.batch.BackupJobCompletionListener;
@@ -49,10 +45,10 @@ import com.amazon.gdpr.dao.GdprInputFetchDaoImpl;
 import com.amazon.gdpr.dao.GdprOutputDaoImpl;
 import com.amazon.gdpr.model.BackupServiceInput;
 import com.amazon.gdpr.model.BackupServiceOutput;
-import com.amazon.gdpr.model.GdprDepersonalizationOutput;
-import com.amazon.gdpr.model.gdpr.input.Country;
 import com.amazon.gdpr.model.gdpr.input.ImpactTable;
 import com.amazon.gdpr.model.gdpr.output.RunErrorMgmt;
+import com.amazon.gdpr.model.gdpr.output.RunModuleMgmt;
+import com.amazon.gdpr.processor.ModuleMgmtProcessor;
 import com.amazon.gdpr.util.GdprException;
 import com.amazon.gdpr.util.GlobalConstants;
 import com.amazon.gdpr.util.SqlQueriesConstant;
@@ -87,6 +83,8 @@ public class GdprBackupServiceBatchConfig {
 
 	@Autowired
 	public BackupServiceDaoImpl backupServiceDaoImpl;
+	@Autowired
+	ModuleMgmtProcessor moduleMgmtProcessor;
 
 	@Autowired
 	@Qualifier("gdprJdbcTemplate")
@@ -96,14 +94,41 @@ public class GdprBackupServiceBatchConfig {
 
 	@Bean
 	@StepScope
-	public JdbcCursorItemReader<BackupServiceInput> backupServiceReader(@Value("#{jobParameters[RunId]}") long runId) {
+	public JdbcCursorItemReader<BackupServiceInput> backupServiceReader(@Value("#{jobParameters[RunId]}") long runId)
+			throws GdprException {
 		String gdprSummaryDataFetch = SqlQueriesConstant.GDPR_SUMMARYDATA_FETCH;
 		String CURRENT_METHOD = "BackupreaderClass";
 		System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: Inside method. " + runId);
-		JdbcCursorItemReader<BackupServiceInput> reader = new JdbcCursorItemReader<BackupServiceInput>();
-		reader.setDataSource(dataSource);
-		reader.setSql(gdprSummaryDataFetch + runId);
-		reader.setRowMapper(new BackupServiceInputRowMapper());
+		JdbcCursorItemReader<BackupServiceInput> reader = null;
+		Boolean exceptionOccured = false;
+		String backupDataStatus = "";
+		try {
+			reader = new JdbcCursorItemReader<BackupServiceInput>();
+			reader.setDataSource(dataSource);
+			reader.setSql(gdprSummaryDataFetch + runId);
+			reader.setRowMapper(new BackupServiceInputRowMapper());
+
+		} catch (Exception exception) {
+			exceptionOccured = true;
+			backupDataStatus = "Facing issues in reading summary management table. ";
+			System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: " + backupDataStatus);
+			exception.printStackTrace();
+		}
+		try {
+			if (exceptionOccured) {
+				String moduleStatus = exceptionOccured ? GlobalConstants.STATUS_FAILURE
+						: GlobalConstants.STATUS_SUCCESS;
+				Date moduleStartDateTime = new Date();
+				RunModuleMgmt runModuleMgmt = new RunModuleMgmt(runId, GlobalConstants.MODULE_BACKUPSERVICE,
+						GlobalConstants.SUB_MODULE_BACKUPSERVICE_JOB_INITIALIZE, moduleStatus, moduleStartDateTime,
+						moduleStartDateTime, backupDataStatus);
+				moduleMgmtProcessor.initiateModuleMgmt(runModuleMgmt);
+			}
+		} catch (GdprException exception) {
+			backupDataStatus = backupDataStatus + exception.getExceptionMessage();
+			System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: " + backupDataStatus);
+			throw new GdprException(backupDataStatus);
+		}
 		return reader;
 	}
 
@@ -134,6 +159,7 @@ public class GdprBackupServiceBatchConfig {
 		Map<Integer, ImpactTable> mapWithIDKeyImpacttable = null;
 		Map<String, List<String>> mapCountry = null;
 		RunErrorMgmt runErrorMgmt = null;
+		String strLastFetchDate = null;
 
 		@BeforeStep
 		public void beforeStep(final StepExecution stepExecution) throws GdprException {
@@ -147,8 +173,10 @@ public class GdprBackupServiceBatchConfig {
 			mapWithIDKeyImpacttable = impactTableDtls.stream()
 					.collect(Collectors.toMap(ImpactTable::getImpactTableId, i -> i));
 			JobParameters jobParameters = stepExecution.getJobParameters();
+			strLastFetchDate = gdprOutputDaoImpl.fetchLastDataLoad(GlobalConstants.TBL_GDPR_DEPERSONALIZATION__C);
 			runId = jobParameters.getLong(GlobalConstants.JOB_REORGANIZE_INPUT_RUNID);
-			System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: runId " + runId);
+			System.out.println(
+					CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: runId " + runId + "::::" + strLastFetchDate);
 			System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: categoryMap " + categoryMap.toString());
 
 		}
@@ -161,60 +189,65 @@ public class GdprBackupServiceBatchConfig {
 
 			if (categoryMap == null)
 				categoryMap = gdprInputDaoImpl.fetchCategoryDetails();
+			Boolean exceptionOccured = false;
+			String backupDataStatus = "";
 
 			String backpQuery = backupServiceInput.getBackupQuery();
 			int catid = backupServiceInput.getCategoryId();
 			String countrycode = backupServiceInput.getCountryCode();
 			long sumId = backupServiceInput.getSummaryId();
 			int impactTableId = backupServiceInput.getImpactTableId();
-			String impactTableName = mapWithIDKeyImpacttable.get(impactTableId).getImpactTableName();
+
 			long insertcount = 0;
 			BackupServiceOutput backupServiceOutput = null;
 			String backupTableName = "";
-			backupTableName = "BKP_" + impactTableName;
 			try {
+				String impactTableName = mapWithIDKeyImpacttable.get(impactTableId).getImpactTableName();
+				backupTableName = "BKP_" + impactTableName;
 				String selectColumns = backpQuery.substring("SELECT ".length(), backpQuery.indexOf(" FROM "));
 
 				List<String> stringList = Arrays.asList(selectColumns.split(","));
 				List<String> trimmedStrings = new ArrayList<String>();
-				for(String s : stringList) {
-				  trimmedStrings.add(s.trim());
+				for (String s : stringList) {
+					trimmedStrings.add(s.trim());
 				}
-                Set<String> hSet = new HashSet<String>(trimmedStrings);
-				
+				Set<String> hSet = new HashSet<String>(trimmedStrings);
+
 				selectColumns = hSet.stream().map(String::valueOf).collect(Collectors.joining(","));
 				String splittedValues = hSet.stream().map(s -> s + "=excluded." + s).collect(Collectors.joining(","));
 
 				String completeQuery = fetchCompleteBackupDataQuery(impactTableName, mapImpacttable, backupServiceInput,
-						selectColumns);
+						selectColumns, strLastFetchDate);
 				completeQuery = completeQuery.replaceAll("TAG.", "SF_ARCHIVE.");
 				@SuppressWarnings("unchecked")
 				String backupDataInsertQuery = "INSERT INTO GDPR." + backupTableName + " (ID," + selectColumns + ") "
 						+ completeQuery + " ON CONFLICT (id) DO UPDATE " + "  SET " + splittedValues + ";";
 				insertcount = backupServiceDaoImpl.insertBackupTable(backupDataInsertQuery);
-				System.out.println("Inserted::"+insertcount+"backupDataInsertQuery::::::#$" + backupDataInsertQuery);
+
+				// System.out.println("Inserted::"+insertcount+"backupDataInsertQuery::::::#$" +
+				// backupDataInsertQuery);
+
 				backupServiceOutput = new BackupServiceOutput(sumId, runId, insertcount);
 			} catch (Exception exception) {
-				System.out.println("exception:::::"+insertcount);
-				System.out.println(
-						CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: " + GlobalConstants.ERR_DATABACKUP_PROCESS);
+				exceptionOccured = true;
+				backupDataStatus = GlobalConstants.ERR_DATABACKUP_PROCESS;
+				System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: " + backupDataStatus);
 				exception.printStackTrace();
-				runErrorMgmt = new RunErrorMgmt(runId, CURRENT_CLASS, CURRENT_METHOD,
-						GlobalConstants.ERR_DATABACKUP_PROCESS, exception.getMessage());
 			}
 			try {
-				if (runErrorMgmt != null) {
-					System.out.println("runErrorMgmt::::::"+runErrorMgmt);
-					gdprOutputDaoImpl.loadErrorDetails(runErrorMgmt);
-					throw new GdprException(GlobalConstants.ERR_DATABACKUP_PROCESS);
+				if (exceptionOccured) {
+					String moduleStatus = exceptionOccured ? GlobalConstants.STATUS_FAILURE
+							: GlobalConstants.STATUS_SUCCESS;
+					Date moduleStartDateTime = new Date();
+					RunModuleMgmt runModuleMgmt = new RunModuleMgmt(runId, GlobalConstants.MODULE_BACKUPSERVICE,
+							GlobalConstants.SUB_MODULE_BACKUPSERVICE_JOB_INITIALIZE, moduleStatus, moduleStartDateTime,
+							moduleStartDateTime, backupDataStatus);
+					moduleMgmtProcessor.initiateModuleMgmt(runModuleMgmt);
 				}
-			} catch (Exception exception) {
-				System.out.println("runErrorMgmt222::::::"+runErrorMgmt);
-				System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: "
-						+ GlobalConstants.ERR_DATABACKUP_PROCESS + GlobalConstants.ERR_RUN_ERROR_MGMT_INSERT);
-				exception.printStackTrace();
-				throw new GdprException(
-						GlobalConstants.ERR_DATABACKUP_PROCESS + GlobalConstants.ERR_RUN_ERROR_MGMT_INSERT);
+			} catch (GdprException exception) {
+				backupDataStatus = backupDataStatus + exception.getExceptionMessage();
+				System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: " + backupDataStatus);
+				throw new GdprException(backupDataStatus);
 			}
 			return backupServiceOutput;
 		}
@@ -233,30 +266,107 @@ public class GdprBackupServiceBatchConfig {
 		public void write(List<? extends BackupServiceOutput> lstBackupServiceOutput) throws Exception {
 			String CURRENT_METHOD = "write";
 			System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: Inside method. ");
-			bkpServiceDaoImpl.updateSummaryTable(lstBackupServiceOutput);
+			Boolean exceptionOccured = false;
+			String backupDataStatus = "";
+
+			try {
+				bkpServiceDaoImpl.updateSummaryTable(lstBackupServiceOutput);
+			} catch (Exception exception) {
+				exceptionOccured = true;
+				backupDataStatus = GlobalConstants.ERR_BACKUPSERVICE_DATA_COUNT;
+				System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: " + backupDataStatus);
+				exception.printStackTrace();
+			}
+			try {
+				if (exceptionOccured) {
+					String moduleStatus = exceptionOccured ? GlobalConstants.STATUS_FAILURE
+							: GlobalConstants.STATUS_SUCCESS;
+					Date moduleStartDateTime = new Date();
+					RunModuleMgmt runModuleMgmt = new RunModuleMgmt(runId, GlobalConstants.MODULE_BACKUPSERVICE,
+							GlobalConstants.SUB_MODULE_BACKUPSERVICE_JOB_INITIALIZE, moduleStatus, moduleStartDateTime,
+							moduleStartDateTime, backupDataStatus);
+					moduleMgmtProcessor.initiateModuleMgmt(runModuleMgmt);
+				}
+			} catch (GdprException exception) {
+				backupDataStatus = backupDataStatus + exception.getExceptionMessage();
+				System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: " + backupDataStatus);
+				throw new GdprException(backupDataStatus);
+			}
 		}
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Bean
-	public Step gdprBackupServiceStep() {
+	public Step gdprBackupServiceStep() throws GdprException {
 		String CURRENT_METHOD = "gdprBackupServiceStep";
 		System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: Inside method. ");
-
-		return stepBuilderFactory.get("gdprBackupServiceStep")
-				.<BackupServiceInput, BackupServiceOutput>chunk(SqlQueriesConstant.BATCH_ROW_COUNT)
-				.reader(backupServiceReader(0)).processor(new GdprBackupServiceProcessor())
-				.writer(new BackupServiceOutputWriter(backupServiceDaoImpl)).build();
+		Step step = null;
+		Boolean exceptionOccured = false;
+		String backupDataStatus = "";
+		try {
+			step = stepBuilderFactory.get("gdprBackupServiceStep")
+					.<BackupServiceInput, BackupServiceOutput>chunk(SqlQueriesConstant.BATCH_ROW_COUNT)
+					.reader(backupServiceReader(0)).processor(new GdprBackupServiceProcessor())
+					.writer(new BackupServiceOutputWriter(backupServiceDaoImpl)).build();
+		} catch (Exception exception) {
+			exceptionOccured = true;
+			backupDataStatus = GlobalConstants.ERR_BACKUPSERVICE_STEP;
+			System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: " + backupDataStatus);
+			exception.printStackTrace();
+		}
+		try {
+			if (exceptionOccured) {
+				String moduleStatus = exceptionOccured ? GlobalConstants.STATUS_FAILURE
+						: GlobalConstants.STATUS_SUCCESS;
+				Date moduleStartDateTime = new Date();
+				RunModuleMgmt runModuleMgmt = new RunModuleMgmt(runId, GlobalConstants.MODULE_BACKUPSERVICE,
+						GlobalConstants.SUB_MODULE_BACKUPSERVICE_JOB_INITIALIZE, moduleStatus, moduleStartDateTime,
+						moduleStartDateTime, backupDataStatus);
+				moduleMgmtProcessor.initiateModuleMgmt(runModuleMgmt);
+			}
+		} catch (GdprException exception) {
+			backupDataStatus = backupDataStatus + exception.getExceptionMessage();
+			System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: " + backupDataStatus);
+			throw new GdprException(backupDataStatus);
+		}
+		return step;
 	}
 
 	@Bean
-	public Job processGdprBackupServiceJob() {
+	public Job processGdprBackupServiceJob() throws GdprException {
 		String CURRENT_METHOD = "processGdprBackupServiceJob";
 		System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: Inside method. ");
+		Boolean exceptionOccured = false;
+		String backupDataStatus = "";
+		Job job = null;
 
-		return jobBuilderFactory.get("processGdprBackupServiceJob").incrementer(new RunIdIncrementer())
-				.listener(backupListener(GlobalConstants.JOB_BACKUP_SERVICE_LISTENER)).flow(gdprBackupServiceStep())
-				.end().build();
+		try {
+
+			job = jobBuilderFactory.get("processGdprBackupServiceJob").incrementer(new RunIdIncrementer())
+					.listener(backupListener(GlobalConstants.JOB_BACKUP_SERVICE_LISTENER)).flow(gdprBackupServiceStep())
+					.end().build();
+		} catch (Exception exception) {
+			exceptionOccured = true;
+			backupDataStatus = GlobalConstants.ERR_BACKUPSERVICE_JOB;
+			System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: " + backupDataStatus);
+			exception.printStackTrace();
+		}
+		try {
+			if (exceptionOccured) {
+				String moduleStatus = exceptionOccured ? GlobalConstants.STATUS_FAILURE
+						: GlobalConstants.STATUS_SUCCESS;
+				Date moduleStartDateTime = new Date();
+				RunModuleMgmt runModuleMgmt = new RunModuleMgmt(runId, GlobalConstants.MODULE_BACKUPSERVICE,
+						GlobalConstants.SUB_MODULE_BACKUPSERVICE_JOB_INITIALIZE, moduleStatus, moduleStartDateTime,
+						moduleStartDateTime, backupDataStatus);
+				moduleMgmtProcessor.initiateModuleMgmt(runModuleMgmt);
+			}
+		} catch (GdprException exception) {
+			backupDataStatus = backupDataStatus + exception.getExceptionMessage();
+			System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: " + backupDataStatus);
+			throw new GdprException(backupDataStatus);
+		}
+		return job;
 	}
 
 	@Bean
@@ -268,7 +378,7 @@ public class GdprBackupServiceBatchConfig {
 	}
 
 	public String fetchCompleteBackupDataQuery(String tableName, Map<String, ImpactTable> mapImpactTable,
-			BackupServiceInput backupServiceInput, String selectCls) {
+			BackupServiceInput backupServiceInput, String selectCls, String strLastFetchDate) {
 		String CURRENT_METHOD = "fetchCompleteBackupDataQuery";
 		// System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: Inside
 		// method");
@@ -333,6 +443,11 @@ public class GdprBackupServiceBatchConfig {
 
 				query[2] = query[2] + " AND GDPR_DEPERSONALIZATION.CATEGORY_ID = " + backupServiceInput.getCategoryId()
 						+ " AND GDPR_DEPERSONALIZATION.COUNTRY_CODE = '" + backupServiceInput.getCountryCode() + "'";
+
+				if (strLastFetchDate != null) {
+					query[2] = query[2] + " AND GDPR_DEPERSONALIZATION.CREATED_DATE_TIME >'" + strLastFetchDate + "'";
+				}
+
 			}
 			taggedQuery = query[0] + query[1] + query[2];
 			if (taggedCompleteQuery.equalsIgnoreCase(""))

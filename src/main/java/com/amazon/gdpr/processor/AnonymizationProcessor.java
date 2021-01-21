@@ -209,10 +209,10 @@ public class AnonymizationProcessor {
 				lstAnonymizationDetailUpdated.addAll(setAnonymizationDetail);
 				Collections.sort(lstAnonymizationDetailUpdated, new SortByFieldId());
 				if (lstAnonymizationDetail != null){
-					//System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+" :: lstAnonymizationDetail : "+lstAnonymizationDetail);
+					System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+" :: lstAnonymizationDetail : "+lstAnonymizationDetail);
 					Collections.sort(lstAnonymizationDetail, new SortByFieldId());
 					boolean duplicateFlag = lstAnonymizationDetailUpdated.removeAll(lstAnonymizationDetail);
-					//System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+" :: duplicateFlag : "+duplicateFlag);					
+					System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+" :: duplicateFlag : "+duplicateFlag);					
 					//System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+" :: lstAnonymizationDetailUpdated : "+lstAnonymizationDetailUpdated);
 				}
 					
@@ -278,8 +278,9 @@ public class AnonymizationProcessor {
     			while (cellsInRow.hasNext()) { 
     				//Cell currentCell = cellsInRow.next();
     				String cellValue = cellsInRow.next().getStringCellValue();
+    				//System.out.println("cellValue:: Inside method"+cellValue);		
     				cellValue = (cellValue != null && cellValue.length() > 0 ) ? cellValue.toUpperCase().trim() : GlobalConstants.EMPTY_STRING;
-    				
+    				//System.out.println("cellValue:: Inside method"+cellValue);	
     				switch(Integer.valueOf(cellIndex)){
     					case 0 :
     						anonymizationInputView.setObject(cellValue);
@@ -320,7 +321,7 @@ public class AnonymizationProcessor {
     						break;
     				}
     				cellIndex++;
-    				//System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+" :: rowNumber : "+rowNumber+" cellIndex : "+cellIndex+" cellValue "+cellValue);    				
+    				System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+" :: rowNumber : "+rowNumber+" cellIndex : "+cellIndex+" cellValue "+cellValue);    				
     			}
     			setAnonymizationInputView.add(anonymizationInputView);
     		}

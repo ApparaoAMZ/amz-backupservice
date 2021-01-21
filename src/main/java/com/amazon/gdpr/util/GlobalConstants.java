@@ -139,7 +139,8 @@ public class GlobalConstants {
 	public static String ERROR_FILE_UPLOAD		= "File processing had an issue. Please verify logs. ";
 	public static String SUCCESS_FILE_MESSAGE	= "File has been uploaded !!!";
 	
-	public static String DATE_FORMAT 			= "yyyy-MM-dd_HH:MI:ss";
+	public static String DATE_FORMAT 			= "yyyy-MM-dd HH24:MI:ss";
+
 	
 	//File Upload Messages
 	public static String MSG_FILE_UPLOAD		= "Please upload Anonymization File only. ";
@@ -249,4 +250,10 @@ public class GlobalConstants {
 	public static String SUB_MODULE_BACKUPSERVICE_DATA			= "Backup Service data Batch Sub Module";
 	public static String MSG_BACKUPSERVICE_INPUT		= "The Backup Data has been completed";
 	public static String ERR_DATABACKUP_PROCESS     = "Facing issues in inserting backup data in backup tables. ";
+	
+	//public static String ERR_BACKUPSERVICE_BEFORESTEP	= "Facing issues in processing the Job parameters. ";
+	public static String ERR_BACKUPSERVICE_DATA_COUNT	= "Facing issues in Updating backup Count. ";
+	public static String ERR_BACKUPSERVICE_JOB = "Facing issues inititing backup service job. ";
+	public static String ERR_BACKUPSERVICE_STEP = "Facing issues inititing backup service step. ";
+	
 }

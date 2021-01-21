@@ -88,6 +88,7 @@ public class RunMgmtDaoImpl {
 	 * This method is called at the end of each service
 	 * @param runModuleMgmt
 	 */
+	@Transactional
 	public void insertModuleUpdates(RunModuleMgmt runModuleMgmt) {
 		String CURRENT_METHOD = "insertModuleUpdates";		
 		System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+" :: Inside method");

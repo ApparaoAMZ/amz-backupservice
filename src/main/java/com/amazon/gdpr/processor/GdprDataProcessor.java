@@ -93,11 +93,13 @@ public class GdprDataProcessor {
 					continue;
 				}
 				int impactTableId = Integer.parseInt(strImpactTableId);
+				//System.out.println("impactTableId::::. "+impactTableId);
 				ImpactField impactField = new ImpactField(impactTableId, anonymizationInputView.fieldLabel,
 						anonymizationInputView.apiName, anonymizationInputView.type);
 				setImpactField.add(impactField);
+				//System.out.println("impactField::::. "+impactField);
 			}
-			//System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " ::  setImpactField loaded. ");
+			
 			if (setImpactField != null && setImpactField.size() > 0) {				
 				lstImpactFieldUpdated.addAll(setImpactField);				
 				if (lstImpactField != null){					

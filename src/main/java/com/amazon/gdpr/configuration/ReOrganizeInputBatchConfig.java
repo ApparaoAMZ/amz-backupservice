@@ -3,6 +3,7 @@ package com.amazon.gdpr.configuration;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -96,10 +97,17 @@ public class ReOrganizeInputBatchConfig {
 			String gdprDepersonalizationDataFetch = SqlQueriesConstant.GDPR_DEPERSONALIZATION_FETCH ;
 			String strLastFetchDate = gdprOutputDaoImpl.fetchLastDataLoad(GlobalConstants.TBL_GDPR_DEPERSONALIZATION__C);
 			
+			System.out.println("strLastFetchDate::::"+strLastFetchDate);
+			System.out.println("SqlQueriesConstant.LAST_DATA_LOAD_FETCH::::"+SqlQueriesConstant.LAST_DATA_LOAD_FETCH);
+			
+			
 			if(strLastFetchDate != null) {
-				gdprDepersonalizationDataFetch = gdprDepersonalizationDataFetch + " AND (CREATEDDATE > TO_DATE(\'"+strLastFetchDate+
-								"\', \'"+ GlobalConstants.DATE_FORMAT +"\') OR LASTMODIFIEDDATE > TO_DATE(\'"+strLastFetchDate+
-								"\', \'"+ GlobalConstants.DATE_FORMAT +"\' )) ";
+				//gdprDepersonalizationDataFetch = gdprDepersonalizationDataFetch + " AND (CREATEDDATE > TO_DATE(\'"+strLastFetchDate+
+							//	"\', \'"+ GlobalConstants.DATE_FORMAT +"\') OR LASTMODIFIEDDATE > TO_DATE(\'"+strLastFetchDate+
+								//"\', \'"+ GlobalConstants.DATE_FORMAT +"\' )) ";
+				
+				gdprDepersonalizationDataFetch = gdprDepersonalizationDataFetch + " AND (CREATEDDATE > '"+strLastFetchDate+"' OR LASTMODIFIEDDATE > '"+strLastFetchDate+"') ";
+				
 			} 
 			System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+" :: GDPR Depersonalization Data Fetch Query : "+gdprDepersonalizationDataFetch); 
 			reader = new JdbcCursorItemReader<GdprDepersonalizationInput>();

@@ -67,6 +67,7 @@ public class FileUploadController {
 			
 	    try {
 	    	List<AnonymizationInputView> lstAnonymizationInputView = anonymizationProcessor.parseAnonymizationFile(file);
+	    	//System.out.println("lstAnonymizationInputView:::"+lstAnonymizationInputView);
 	    	if(lstAnonymizationInputView != null && lstAnonymizationInputView.size() > 0){
 	    		uploadFileStatus = GlobalConstants.MSG_FILE_ROWS_PROCESSED+lstAnonymizationInputView.size();	    		
 	    		int insertImpactFieldCount = gdprDataProcessor.loadInputFieldDetails(lstAnonymizationInputView);

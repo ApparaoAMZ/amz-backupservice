@@ -64,7 +64,7 @@ public class TagQueryProcessor {
 	
 	public String fetchCompleteTaggedQuery(String tableName, Map<String, ImpactTable> mapImpactTable, Map<String, String> mapSummaryInputs) { 
 		String CURRENT_METHOD = "fetchCompleteTaggedQuery";
-		System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: Inside method");
+		//System.out.println(CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: Inside method");
 		String taggedCompleteQuery = "";
 		
 		ImpactTable impactTable = mapImpactTable.get(tableName);
