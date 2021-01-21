@@ -1,6 +1,5 @@
 package com.amazon.gdpr.model.gdpr.output;
 
-import java.sql.Timestamp;
 import java.util.Date;
 
 /****************************************************************************************
@@ -11,7 +10,7 @@ public class DataLoad {
 	private String tableName;
 	private String countryCode;
 	private Date dataLoadDateTime;
-	private Timestamp strDataLoadDate;
+	private String strDataLoadDate;
 	
 	/**
 	 * @param tableName
@@ -28,7 +27,7 @@ public class DataLoad {
 	/**
 	 * @param dataLoadDateTime
 	 */
-	public DataLoad(Timestamp strDataLoadDate) {
+	public DataLoad(String strDataLoadDate) {
 		super();
 		this.strDataLoadDate = strDataLoadDate;
 	}
@@ -72,13 +71,13 @@ public class DataLoad {
 	/**
 	 * @return the strDataLoadDate
 	 */
-	public Timestamp getStrDataLoadDate() {
+	public String getStrDataLoadDate() {
 		return strDataLoadDate;
 	}
 	/**
 	 * @param strDataLoadDate the strDataLoadDate to set
 	 */
-	public void setStrDataLoadDate(Timestamp strDataLoadDate) {
+	public void setStrDataLoadDate(String strDataLoadDate) {
 		this.strDataLoadDate = strDataLoadDate;
 	}
 }
