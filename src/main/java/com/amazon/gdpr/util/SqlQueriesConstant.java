@@ -95,7 +95,7 @@ public class SqlQueriesConstant {
 	
 	public static String DATA_LOAD_INSERT = "INSERT INTO GDPR.DATA_LOAD (TABLE_NAME, COUNTRY_CODE, LAST_DATA_LOADED_DATE) VALUES (?, ?, ?)";
 	
-	public static String LAST_DATA_LOAD_FETCH = "SELECT TO_CHAR(MAX(LAST_DATA_LOADED_DATE), \'"+GlobalConstants.DATE_FORMAT+"\') STR_DATA_LOADED_DATE "
+	public static String LAST_DATA_LOAD_FETCH = "SELECT TO_CHAR(MAX(LAST_DATA_LOADED_DATE::timestamptz), \'"+GlobalConstants.DATE_FORMAT+"\') STR_DATA_LOADED_DATE "
 			+ " FROM GDPR.DATA_LOAD WHERE TABLE_NAME = ? ";
 	//BackupServiceQueris
 	public static String GDPR_SUMMARYDATA_FETCH = "SELECT * FROM  GDPR.RUN_SUMMARY_MGMT WHERE RUN_ID=";	
