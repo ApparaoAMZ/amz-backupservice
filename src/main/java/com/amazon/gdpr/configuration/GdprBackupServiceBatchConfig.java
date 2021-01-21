@@ -173,7 +173,7 @@ public class GdprBackupServiceBatchConfig {
 			mapWithIDKeyImpacttable = impactTableDtls.stream()
 					.collect(Collectors.toMap(ImpactTable::getImpactTableId, i -> i));
 			JobParameters jobParameters = stepExecution.getJobParameters();
-			strLastFetchDate = gdprOutputDaoImpl.fetchLastDataLoad(GlobalConstants.TBL_GDPR_DEPERSONALIZATION__C);
+			//strLastFetchDate = gdprOutputDaoImpl.fetchLastDataLoad(GlobalConstants.TBL_GDPR_DEPERSONALIZATION__C);
 			runId = jobParameters.getLong(GlobalConstants.JOB_REORGANIZE_INPUT_RUNID);
 			System.out.println(
 					CURRENT_CLASS + " ::: " + CURRENT_METHOD + " :: runId " + runId + "::::" + strLastFetchDate);

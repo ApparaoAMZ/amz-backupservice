@@ -95,7 +95,7 @@ public class ReOrganizeInputBatchConfig {
 		
 		try {
 			String gdprDepersonalizationDataFetch = SqlQueriesConstant.GDPR_DEPERSONALIZATION_FETCH ;
-			String strLastFetchDate = gdprOutputDaoImpl.fetchLastDataLoad(GlobalConstants.TBL_GDPR_DEPERSONALIZATION__C);
+			Timestamp strLastFetchDate = gdprOutputDaoImpl.fetchLastDataLoad(GlobalConstants.TBL_GDPR_DEPERSONALIZATION__C);
 			
 			System.out.println("strLastFetchDate::::"+strLastFetchDate);
 			System.out.println("SqlQueriesConstant.LAST_DATA_LOAD_FETCH::::"+SqlQueriesConstant.LAST_DATA_LOAD_FETCH);

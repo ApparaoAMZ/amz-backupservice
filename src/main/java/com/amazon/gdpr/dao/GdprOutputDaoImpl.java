@@ -3,6 +3,7 @@ package com.amazon.gdpr.dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -176,10 +177,10 @@ public class GdprOutputDaoImpl {
 	 * Fetches the Last Data Load detail of a particular table
 	 * @return Date The date when the last data was loaded in the table
 	 */
-	public String fetchLastDataLoad(String tableName) {
+	public Timestamp fetchLastDataLoad(String tableName) {
 		String CURRENT_METHOD = "fetchLastDataLoad";		
 		System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+":: Inside method");
-		String strDataLoadDate = null;
+		Timestamp strDataLoadDate = null;
 		@SuppressWarnings("unchecked")
 		List<DataLoad> lstDataLoad = jdbcTemplate.query(SqlQueriesConstant.LAST_DATA_LOAD_FETCH, new Object[]{tableName}, new DataLoadRowMapper());
 		if(lstDataLoad != null && lstDataLoad.size() > 0)
@@ -203,10 +204,10 @@ public class GdprOutputDaoImpl {
 		public DataLoad mapRow(ResultSet rs, int rowNum) throws SQLException {
 			@SuppressWarnings("unused")
 			String CURRENT_METHOD = "mapRow";		
-			System.out.println(CURRENT_CLASS+" ::: "+rs.getString("STR_DATA_LOADED_DATE")+":: Inside method");
+			System.out.println(CURRENT_CLASS+" ::: "+rs.getTimestamp("STR_DATA_LOADED_DATE")+":: Inside method");
 			
 			//return new DataLoad(rs.getDate("LAST_DATA_LOADED_DATE"));
-			return new DataLoad(rs.getString("STR_DATA_LOADED_DATE"));
+			return new DataLoad(rs.getTimestamp("STR_DATA_LOADED_DATE"));
 		}
 	}
 	
