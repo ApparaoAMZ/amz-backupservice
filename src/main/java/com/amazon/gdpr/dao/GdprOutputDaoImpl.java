@@ -203,7 +203,7 @@ public class GdprOutputDaoImpl {
 		public DataLoad mapRow(ResultSet rs, int rowNum) throws SQLException {
 			@SuppressWarnings("unused")
 			String CURRENT_METHOD = "mapRow";		
-			//System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+":: Inside method");
+			System.out.println(CURRENT_CLASS+" ::: "+rs.getString("STR_DATA_LOADED_DATE")+":: Inside method");
 			
 			//return new DataLoad(rs.getDate("LAST_DATA_LOADED_DATE"));
 			return new DataLoad(rs.getString("STR_DATA_LOADED_DATE"));
