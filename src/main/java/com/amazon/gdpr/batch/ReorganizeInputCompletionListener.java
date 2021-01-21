@@ -45,7 +45,6 @@ public class ReorganizeInputCompletionListener extends JobExecutionListenerSuppo
 	public void afterJob(JobExecution jobExecution) {		
 		String CURRENT_METHOD = "afterJob";		
 		System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+" :: Inside method");
-		 String DATE_FORMAT = "dd-M-yyyy hh:mm:ss";
 		if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
 			System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+" :: "+jobRelatedName+ " BATCH JOB COMPLETED SUCCESSFULLY");
 			JobParameters jobParameters = jobExecution.getJobParameters();
@@ -53,23 +52,6 @@ public class ReorganizeInputCompletionListener extends JobExecutionListenerSuppo
 			long runId = jobParameters.getLong(GlobalConstants.JOB_INPUT_RUN_ID);
 			moduleStartDateTime = jobExecution.getStartTime();
 			
-			SimpleDateFormat formatter = new SimpleDateFormat(DATE_FORMAT);
-
-	      //  String dateInString = ""+moduleStartDateTime+"";
-	        Date date=null;
-			try {
-				date = formatter.parse(moduleStartDateTime.toString());
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	        TimeZone tz = TimeZone.getDefault();
-
-	        // From TimeZone Asia/Singapore
-	        System.out.println("TimeZone : " + tz.getID() + " - " + tz.getDisplayName());
-	        System.out.println("TimeZone : " + tz);
-	        System.out.println("Date (Singapore) : " + formatter.format(date));
-
 			moduleEndDateTime = jobExecution.getEndTime();
 			failureStatus = jobExecution.getFailureExceptions().toString();			
 			try {

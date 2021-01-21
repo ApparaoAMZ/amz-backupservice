@@ -102,11 +102,11 @@ public class ReOrganizeInputBatchConfig {
 			
 			
 			if(strLastFetchDate != null) {
-				//gdprDepersonalizationDataFetch = gdprDepersonalizationDataFetch + " AND (CREATEDDATE > TO_DATE(\'"+strLastFetchDate+
-							//	"\', \'"+ GlobalConstants.DATE_FORMAT +"\') OR LASTMODIFIEDDATE > TO_DATE(\'"+strLastFetchDate+
-								//"\', \'"+ GlobalConstants.DATE_FORMAT +"\' )) ";
+				gdprDepersonalizationDataFetch = gdprDepersonalizationDataFetch + " AND (CREATEDDATE > TO_DATE(\'"+strLastFetchDate+
+								"\', \'"+ GlobalConstants.DATE_FORMAT +"\') OR LASTMODIFIEDDATE > TO_DATE(\'"+strLastFetchDate+
+								"\', \'"+ GlobalConstants.DATE_FORMAT +"\' )) ";
 				
-				gdprDepersonalizationDataFetch = gdprDepersonalizationDataFetch + " AND (CREATEDDATE > '"+strLastFetchDate+"' OR LASTMODIFIEDDATE > '"+strLastFetchDate+"') ";
+				//gdprDepersonalizationDataFetch = gdprDepersonalizationDataFetch + " AND (CREATEDDATE > '"+strLastFetchDate+"' OR LASTMODIFIEDDATE > '"+strLastFetchDate+"') ";
 				
 			} 
 			System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+" :: GDPR Depersonalization Data Fetch Query : "+gdprDepersonalizationDataFetch); 
