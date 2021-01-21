@@ -45,7 +45,7 @@ public class ReorganizeInputCompletionListener extends JobExecutionListenerSuppo
 	public void afterJob(JobExecution jobExecution) {		
 		String CURRENT_METHOD = "afterJob";		
 		System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+" :: Inside method");
-		 String DATE_FORMAT = "dd-M-yyyy hh:mm:ss ";
+		 String DATE_FORMAT = "dd-M-yyyy hh:mm:ss";
 		if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
 			System.out.println(CURRENT_CLASS+" ::: "+CURRENT_METHOD+" :: "+jobRelatedName+ " BATCH JOB COMPLETED SUCCESSFULLY");
 			JobParameters jobParameters = jobExecution.getJobParameters();
